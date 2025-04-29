@@ -72,11 +72,16 @@ function createServer() {
             } else {
               parsedFileData = JSON.parse(fileData);
 
-              if (!Array.isArray(parsedFileData)) {
-                parsedFileData = [];
+              if (typeof parsedFileData === 'object') {
+                if (Object.keys(parsedFileData).length) {
+                  parsedFileData = [parsedFileData];
+                  parsedFileData.push(dataObj);
+                } else if (!Object.keys(parsedFileData).length) {
+                  parsedFileData = dataObj;
+                } else if (Array.isArray(parsedFileData)) {
+                  parsedFileData.push(dataObj);
+                }
               }
-
-              parsedFileData.push(dataObj);
 
               const newData = JSON.stringify(parsedFileData, null, 2);
 

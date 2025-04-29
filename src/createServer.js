@@ -60,17 +60,36 @@ function createServer() {
             return res.end('Invalid data format');
           }
 
-          const dataJSON = JSON.stringify(dataObj, null, 2);
           const filePath = path.resolve('db', 'expense.json');
 
-          fs.writeFile(filePath, dataJSON, (err) => {
+          fs.readFile(filePath, (err, fileData) => {
+            let parsedFileData = [];
+
             if (err) {
               res.writeHead(500, { 'Content-Type': 'text/plain' });
 
               return res.end(`Server error: ${err}`);
+            } else {
+              parsedFileData = JSON.parse(fileData);
+
+              if (!Array.isArray(parsedFileData)) {
+                parsedFileData = [];
+              }
+
+              parsedFileData.push(dataObj);
+
+              const newData = JSON.stringify(parsedFileData, null, 2);
+
+              fs.writeFile(filePath, newData, (error) => {
+                if (error) {
+                  res.writeHead(500, { 'Content-Type': 'text/plain' });
+
+                  return res.end(`Server error: ${error}`);
+                }
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(newData);
+              });
             }
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(dataJSON);
           });
         } catch (e) {
           res.writeHead(400, { 'Content-Type': 'text/plain' });
